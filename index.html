@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JV Imports | Loja Virtual</title>
+    <!-- Ícones Phosphor -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        /* --- VARIAVEIS DE TEMA --- */
+        :root {
+            /* Light Mode (Padrão) */
+            --primary: #000000;
+            --on-primary: #ffffff;
+            --secondary: #f4f4f5;
+            --accent: #2ecc71;
+            --accent-hover: #27ae60;
+            --bg-body: #eef2f5; /* Fundo fora do app no PC */
+            --bg-app: #f8f9fa;  /* Fundo do app */
+            --surface: #ffffff; /* Cartões e barras */
+            --text-main: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --radius: 16px;
+            --header-height: 65px;
+            --nav-height: 65px;
+            --app-max-width: 480px; /* Largura estilo App Mobile */
+        }
+
+        /* Dark Mode */
+        [data-theme="dark"] {
+            --primary: #ffffff;
+            --on-primary: #000000;
+            --secondary: #27272a;
+            --accent: #4ade80;
+            --accent-hover: #22c55e;
+            --bg-body: #121212;
+            --bg-app: #18181b;
+            --surface: #27272a;
+            --text-main: #f3f4f6;
+            --text-light: #9ca3af;
+            --border: #3f3f46;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4);
+        }
+
+        /* --- RESET & GLOBAL --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            background: var(--bg-body); 
+            color: var(--text-main); 
+            min-height: 100vh;
+            display: flex;
+            justify-content: center; /* Centraliza no PC */
+        }
+
+        /* Wrapper que simula o App Mobile no PC */
+        #app-wrapper {
+            width: 100%;
+            max-width: var(--app-max-width);
+            background: var(--bg-app);
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding-bottom: calc(var(--nav-height) + 30px); /* Espaço para a nav bar */
+            overflow-x: hidden;
+        }
+
+        button { cursor: pointer; border: none; outline: none; background: none; font-family: inherit; color: inherit; }
+        input, textarea, select { font-family: inherit; color: inherit; }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+        img { display: block; max-width: 100%; }
+
+        /* --- UTILITARIOS --- */
+        .container { padding: 0 20px; }
+        .flex { display: flex; align-items: center; }
+        .flex-col { flex-direction: column; }
+        .justify-between { justify-content: space-between; }
+        .gap-10 { gap: 10px; }
+        .full-width { width: 100%; }
+        .text-center { text-align: center; }
+        .font-bold { font-weight: 700; }
+        .text-sm { font-size: 0.875rem; }
+        .text-accent { color: var(--accent); }
+        .hidden { display: none !important; }
+
+        /* --- COMPONENTES --- */
+        .btn {
+            background: var(--text-main); color: var(--bg-app); padding: 14px;
+            border-radius: var(--radius); font-weight: 600; text-align: center;
+            transition: 0.2s; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-primary { background: var(--text-main); color: var(--bg-app); }
+        .btn-success { background: var(--accent); color: #000; /* Contraste melhor no verde */ }
+        .btn-outline { border: 1px solid var(--border); color: var(--text-main); background: transparent; }
+        
+        /* --- HEADER --- */
+        header {
+            position: sticky; top: 0; left: 0; width: 100%; height: var(--header-height);
+            background: var(--surface); z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        
+        /* Logo styling - Inverte cores no dark mode se for PNG transparente preto */
+        .logo-img { 
+            height: 40px; 
+            object-fit: contain; 
+        }
+        
+        /* Ajuste inteligente para a logo se ela for preta transparente */
+        [data-theme="dark"] .logo-img {
+            filter: brightness(0) invert(1); /* Torna a logo branca no modo escuro */
+        }
+
+        .logo-text { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; }
+        
+        .header-actions { display: flex; gap: 15px; align-items: center; }
+        .header-btn { font-size: 1.5rem; position: relative; padding: 5px; }
+        
+        .badge {
+            position: absolute; top: 0; right: 0; background: var(--accent);
+            color: #000; font-size: 0.65rem; padding: 2px 6px;
+            border-radius: 10px; font-weight: bold; min-width: 18px; text-align: center;
+        }
+
+        /* --- BUSCA --- */
+        .search-container { padding: 15px 20px; background: var(--bg-app); position: sticky; top: var(--header-height); z-index: 90; }
+        .search-box {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 10px 15px; display: flex; align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .search-box input { border: none; background: transparent; width: 100%; margin-left: 10px; outline: none; }
+
+        /* --- NAVEGAÇÃO --- */
+        .nav-bar {
+            position: fixed; bottom: 0; 
+            width: 100%; max-width: var(--app-max-width); /* Respeita largura app */
+            height: var(--nav-height);
+            background: var(--surface); border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 90; padding-bottom: env(safe-area-inset-bottom);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--text-light); flex: 1; height: 100%; transition: 0.2s;
+        }
+        .nav-item i { font-size: 1.5rem; margin-bottom: 4px; }
+        .nav-item span { font-size: 0.7rem; font-weight: 600; }
+        .nav-item.active { color: var(--text-main); }
+        .nav-item.active i { color: var(--accent); weight: fill; }
+
+        /* --- VIEWS --- */
+        .view { display: none; animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Categorias */
+        .categories-wrapper { padding: 10px 20px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .categories-wrapper::-webkit-scrollbar { display: none; }
+        .categories { display: flex; gap: 10px; }
+        .cat-chip {
+            background: var(--surface); padding: 8px 16px; border-radius: 100px; font-size: 0.85rem;
+            white-space: nowrap; border: 1px solid var(--border); font-weight: 600; color: var(--text-light);
+            transition: 0.2s;
+        }
+        .cat-chip.active { background: var(--text-main); color: var(--bg-app); border-color: var(--text-main); }
+
+        /* Cards de Produto */
+        .product-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 20px 20px;
+        }
+        .product-card {
+            background: var(--surface); border-radius: var(--radius); overflow: hidden;
+            box-shadow: var(--shadow-sm); position: relative; display: flex; flex-direction: column;
+            border: 1px solid var(--border); transition: transform 0.2s;
+        }
+        .product-card:active { transform: scale(0.98); }
+        
+        .product-img {
+            width: 100%; height: 160px; object-fit: cover; background: var(--secondary);
+        }
+        .discount-tag {
+            position: absolute; top: 8px; left: 8px; background: var(--accent);
+            color: #000; font-size: 0.7rem; font-weight: bold;
+            padding: 4px 8px; border-radius: 6px;
+        }
+        .product-info { padding: 12px; flex: 1; display: flex; flex-direction: column; }
+        .p-cat { font-size: 0.7rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 4px; }
+        .p-title { font-size: 0.95rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 40px; }
+        .p-price-block { margin-top: auto; }
+        .p-old { font-size: 0.75rem; text-decoration: line-through; color: var(--text-light); }
+        .p-current { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
+        
+        /* Botão adicionar rápido */
+        .add-btn {
+            margin-top: 10px; width: 100%; padding: 8px; border-radius: 8px;
+            background: var(--secondary); color: var(--text-main); font-weight: 600; font-size: 0.8rem;
+        }
+
+        /* Detalhes */
+        .detail-header { position: relative; }
+        .detail-img { width: 100%; height: 400px; object-fit: cover; background: var(--secondary); }
+        .back-float { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); color: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        
+        .detail-body { 
+            background: var(--surface); border-radius: 24px 24px 0 0; margin-top: -30px; position: relative; 
+            padding: 24px 20px 100px; /* Espaço extra para botão fixo */
+            min-height: 50vh; box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+        }
+        .detail-fixed-bottom {
+            position: fixed; bottom: 0; left: 0; width: 100%; max-width: var(--app-max-width);
+            background: var(--surface); padding: 15px 20px; border-top: 1px solid var(--border);
+            z-index: 100; padding-bottom: calc(15px + env(safe-area-inset-bottom));
+        }
+
+        /* Carrinho */
+        .cart-item {
+            background: var(--surface); padding: 12px; border-radius: 12px;
+            margin-bottom: 12px; display: flex; gap: 15px; align-items: center;
+            border: 1px solid var(--border);
+        }
+        .cart-img { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; background: var(--secondary); }
+        .qty-selector { display: flex; align-items: center; gap: 12px; background: var(--secondary); border-radius: 8px; padding: 4px 8px; width: fit-content; margin-top: 8px; }
+        
+        /* Formulários */
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 0.9rem; margin-bottom: 8px; font-weight: 500; color: var(--text-light); }
+        .form-input {
+            width: 100%; padding: 14px; border: 1px solid var(--border);
+            border-radius: 12px; font-size: 1rem; background: var(--surface);
+            transition: border-color 0.2s;
+        }
+        .form-input:focus { border-color: var(--text-main); }
+
+        /* Toast */
+        #toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: var(--text-main); color: var(--bg-app); padding: 12px 24px;
+            border-radius: 50px; z-index: 2000; box-shadow: var(--shadow-md);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0;
+            display: flex; align-items: center; gap: 10px; font-weight: 500; white-space: nowrap;
+        }
+        #toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* Helper para PC */
+        @media (min-width: 500px) {
+            .nav-bar, .detail-fixed-bottom { left: 50%; transform: translateX(-50%); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Wrapper Principal (Simula Mobile) -->
+    <div id="app-wrapper">
+        
+        <!-- Notificação Toast -->
+        <div id="toast"><i class="ph-fill ph-check-circle"></i> <span id="toast-msg">Mensagem</span></div>
+
+        <!-- Header -->
+        <header>
+            <div class="logo-area" onclick="app.router.go('home')">
+                <!-- Tenta carregar a imagem, fallback para texto se der erro -->
+                <img src="./102416.jpg" alt="JV Imports Logo" class="logo-img" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='block'">
+                <span id="fallback-logo" class="logo-text" style="display:none;">JV <span class="text-accent">IMPORTS</span></span>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn" onclick="app.theme.toggle()" aria-label="Alternar Tema">
+                    <i id="theme-icon" class="ph ph-moon"></i>
+                </button>
+                <button class="header-btn" onclick="app.router.go('cart')" aria-label="Carrinho">
+                    <i class="ph ph-shopping-cart"></i>
+                    <span id="header-cart-count" class="badge hidden">0</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Área Principal -->
+        <main id="app-root">
+            <!-- Conteúdo Renderizado Dinamicamente -->
+        </main>
+
+        <!-- Navegação Inferior -->
+        <nav class="nav-bar">
+            <button class="nav-item active" onclick="app.router.go('home')" id="nav-home">
+                <i class="ph ph-house"></i>
+                <span>Início</span>
+            </button>
+            <button class="nav-item" onclick="app.router.go('search')" id="nav-search">
+                <i class="ph ph-magnifying-glass"></i>
+                <span>Buscar</span>
+            </button>
+            <button class="nav-item" onclick="app.router.go('cart')" id="nav-cart">
+                <i class="ph ph-shopping-cart"></i>
+                <span>Carrinho</span>
+            </button>
+            <button class="nav-item" onclick="app.router.go('orders')" id="nav-orders">
+                <i class="ph ph-receipt"></i>
+                <span>Pedidos</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- LÓGICA JAVASCRIPT -->
+    <script>
+        // --- BASE DE DADOS ---
+        const DB = [
+            { id: 1, title: "iPhone 14 Pro Max 256GB", price: 7899.00, oldPrice: 8500.00, cat: "eletronicos", img: "https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?auto=format&fit=crop&w=500&q=80", desc: "A potência máxima da Apple. Câmera de 48MP, Ilha Dinâmica e processador A16 Bionic." },
+            { id: 2, title: "AirPods Pro (2ª Geração)", price: 1499.90, oldPrice: 1899.00, cat: "acessorios", img: "https://images.unsplash.com/photo-1629367494173-c78a56567877?auto=format&fit=crop&w=500&q=80", desc: "Cancelamento Ativo de Ruído 2x melhor e Áudio Espacial Personalizado." },
+            { id: 3, title: "MacBook Air M2 Midnight", price: 8299.00, oldPrice: 9500.00, cat: "eletronicos", img: "https://images.unsplash.com/photo-1661963212519-94dd78414133?auto=format&fit=crop&w=500&q=80", desc: "Design ultrafino, chip M2 superpotente e bateria para o dia todo." },
+            { id: 4, title: "Perfume Bleu de Chanel", price: 850.00, oldPrice: 980.00, cat: "perfumes", img: "https://images.unsplash.com/photo-1523293182086-7651a899d60f?auto=format&fit=crop&w=500&q=80", desc: "Fragrância amadeirada aromática. Elegância e liberdade masculina." },
+            { id: 5, title: "Tênis Jordan 1 Retro High", price: 1299.90, oldPrice: 1599.00, cat: "moda", img: "https://images.unsplash.com/photo-1579338559194-a162d19bf842?auto=format&fit=crop&w=500&q=80", desc: "O clássico que iniciou tudo. Estilo e conforto para o dia a dia." },
+            { id: 6, title: "JBL Boombox 3 Wi-Fi", price: 2199.00, oldPrice: 2600.00, cat: "eletronicos", img: "https://images.unsplash.com/photo-1610603826233-d12b5c76023b?auto=format&fit=crop&w=500&q=80", desc: "Som massivo o dia todo. Resistente à água e poeira." }
+        ];
+
+        // --- APLICAÇÃO ---
+        const app = {
+            state: {
+                cart: JSON.parse(localStorage.getItem('jv_cart')) || [],
+                orders: JSON.parse(localStorage.getItem('jv_orders')) || [],
+                theme: localStorage.getItem('jv_theme') || 'light',
+                filter: 'all'
+            },
+
+            // --- GERENCIADOR DE TEMA ---
+            theme: {
+                init: () => {
+                    // Verifica preferência do sistema se não houver salvo
+                    if (!localStorage.getItem('jv_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                        app.state.theme = 'dark';
+                    }
+                    app.theme.apply(app.state.theme);
+                },
+                toggle: () => {
+                    app.state.theme = app.state.theme === 'light' ? 'dark' : 'light';
+                    app.theme.apply(app.state.theme);
+                },
+                apply: (theme) => {
+                    document.documentElement.setAttribute('data-theme', theme);
+                    localStorage.setItem('jv_theme', theme);
+                    
+                    // Atualiza ícone
+                    const icon = document.getElementById('theme-icon');
+                    if(icon) {
+                        icon.className = theme === 'light' ? 'ph ph-moon' : 'ph ph-sun';
+                    }
+                }
+            },
+
+            // --- UTILITÁRIOS ---
+            utils: {
+                fmt: (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+                toast: (msg, type = 'success') => {
+                    const t = document.getElementById('toast');
+                    t.innerHTML = `<i class="ph-fill ${type === 'success' ? 'ph-check-circle' : 'ph-warning-circle'}"></i> <span>${msg}</span>`;
+                    t.classList.add('visible');
+                    setTimeout(() => t.classList.remove('visible'), 3000);
+                }
+            },
+
+            // --- CARRINHO ---
+            cart: {
+                add: (id) => {
+                    const p = DB.find(x => x.id === id);
+                    const item = app.state.cart.find(i => i.id === id);
+                    if(item) item.qty++; else app.state.cart.push({...p, qty: 1});
+                    app.cart.save();
+                    app.utils.toast(`Adicionado ao carrinho!`);
+                },
+                update: (id, d) => {
+                    const item = app.state.cart.find(i => i.id === id);
+                    if(item) {
+                        item.qty += d;
+                        if(item.qty <= 0) app.state.cart = app.state.cart.filter(i => i.id !== id);
+                        app.cart.save();
+                        if(app.state.currentView === 'cart') app.views.cart();
+                    }
+                },
+                remove: (id) => {
+                    app.state.cart = app.state.cart.filter(i => i.id !== id);
+                    app.cart.save();
+                    if(app.state.currentView === 'cart') app.views.cart();
+                },
+                save: () => {
+                    localStorage.setItem('jv_cart', JSON.stringify(app.state.cart));
+                    app.ui.updateBadge();
+                },
+                total: () => app.state.cart.reduce((a, b) => a + (b.price * b.qty), 0),
+                count: () => app.state.cart.reduce((a, b) => a + b.qty, 0)
+            },
+
+            // --- UI HELPERS ---
+            ui: {
+                updateBadge: () => {
+                    const c = app.cart.count();
+                    const el = document.getElementById('header-cart-count');
+                    el.innerText = c;
+                    c > 0 ? el.classList.remove('hidden') : el.classList.add('hidden');
+                },
+                navActive: (id) => {
+                    document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+                    const el = document.getElementById(`nav-${id}`);
+                    if(el) el.classList.add('active');
+                    else if(id === 'product' || id === 'checkout') document.getElementById('nav-home').classList.add('active');
+                }
+            },
+
+            // --- ROTEAMENTO ---
+            router: {
+                go: (view, param = null) => {
+                    app.state.currentView = view;
+                    app.ui.navActive(view);
+                    window.scrollTo(0,0);
+                    const root = document.getElementById('app-root');
+                    root.innerHTML = ''; // Limpa
+                    
+                    // Esconde Nav Bar no checkout para foco
+                    const nav = document.querySelector('.nav-bar');
+                    if(view === 'product' || view === 'checkout') nav.style.display = 'none';
+                    else nav.style.display = 'flex';
+
+                    // Renderiza
+                    switch(view) {
+                        case 'home': app.views.home(root); break;
+                        case 'search': app.views.search(root); break;
+                        case 'product': app.views.product(root, param); break;
+                        case 'cart': app.views.cart(root); break;
+                        case 'checkout': app.views.checkout(root); break;
+                        case 'orders': app.views.orders(root); break;
+                        case 'success': app.views.success(root); break;
+                    }
+                }
+            },
+
+            // --- VIEW RENDERERS ---
+            views: {
+                home: (el) => {
+                    // Filtros
+                    const cats = [{id:'all', l:'Todos'}, {id:'eletronicos', l:'Eletrônicos'}, {id:'moda', l:'Moda'}, {id:'acessorios', l:'Acessórios'}];
+                    const catHtml = cats.map(c => 
+                        `<button class="cat-chip ${app.state.filter === c.id ? 'active' : ''}" 
+                          onclick="app.state.filter='${c.id}'; app.router.go('home')">${c.l}</button>`
+                    ).join('');
+                    
+                    // Produtos
+                    const list = app.state.filter === 'all' ? DB : DB.filter(p => p.cat === app.state.filter);
+                    const gridHtml = list.map(p => `
+                        <div class="product-card" onclick="app.router.go('product', ${p.id})">
+                            <span class="discount-tag">-${Math.round((1 - p.price/p.oldPrice)*100)}% OFF</span>
+                            <img src="${p.img}" class="product-img" loading="lazy">
+                            <div class="product-info">
+                                <span class="p-cat">${p.cat}</span>
+                                <h3 class="p-title">${p.title}</h3>
+                                <div class="p-price-block">
+                                    <span class="p-old">${app.utils.fmt(p.oldPrice)}</span>
+                                    <div class="p-current">${app.utils.fmt(p.price)}</div>
+                                </div>
+                                <button class="add-btn" onclick="event.stopPropagation(); app.cart.add(${p.id})">Comprar</button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    el.innerHTML = `
+                        <div class="categories-wrapper"><div class="categories">${catHtml}</div></div>
+                        <div class="product-grid" style="margin-top:15px;">${gridHtml}</div>
+                        <div style="height:80px"></div> <!-- Espaço Nav -->
+                    `;
+                    
+                    // Re-exibir navbar caso tenha voltado de produto
+                    document.querySelector('.nav-bar').style.display = 'flex';
+                },
+
+                product: (el, id) => {
+                    const p = DB.find(x => x.id === id);
+                    if(!p) return app.router.go('home');
+
+                    el.innerHTML = `
+                        <div class="detail-header">
+                            <button class="back-float" onclick="app.router.go('home')"><i class="ph-bold ph-arrow-left"></i></button>
+                            <img src="${p.img}" class="detail-img">
+                        </div>
+                        <div class="detail-body">
+                            <div class="flex justify-between" style="align-items:flex-start; margin-bottom:15px;">
+                                <div>
+                                    <span style="text-transform:uppercase; font-size:0.8rem; color:var(--text-light); letter-spacing:1px;">${p.cat}</span>
+                                    <h1 style="font-size:1.5rem; line-height:1.2; margin-top:5px;">${p.title}</h1>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-10" style="margin-bottom:25px; align-items:baseline;">
+                                <span style="font-size:2rem; font-weight:800; color:var(--text-main);">${app.utils.fmt(p.price)}</span>
+                                <span style="text-decoration:line-through; color:var(--text-light); font-size:1rem;">${app.utils.fmt(p.oldPrice)}</span>
+                            </div>
+
+                            <h3 style="font-size:1rem; margin-bottom:10px;">Sobre o produto</h3>
+                            <p style="color:var(--text-light); line-height:1.6; margin-bottom:40px;">${p.desc}</p>
+                        </div>
+
+                        <div class="detail-fixed-bottom">
+                            <button class="btn btn-success" onclick="app.cart.add(${p.id})">
+                                <i class="ph-bold ph-bag"></i> ADICIONAR AO CARRINHO
+                            </button>
+                        </div>
+                    `;
+                },
+
+                cart: (el) => {
+                    if(app.state.cart.length === 0) {
+                        el.innerHTML = `
+                            <div class="container text-center flex-col" style="height:60vh; justify-content:center;">
+                                <div style="background:var(--surface); padding:30px; border-radius:50%; margin-bottom:20px; box-shadow:var(--shadow-sm);">
+                                    <i class="ph ph-shopping-cart" style="font-size:3rem; color:var(--text-light);"></i>
+                                </div>
+                                <h2>Seu carrinho está vazio</h2>
+                                <p style="color:var(--text-light); margin:10px 0 30px;">Navegue por nossas categorias e encontre as melhores ofertas.</p>
+                                <button class="btn btn-primary" style="width:auto; padding:12px 30px;" onclick="app.router.go('home')">Começar a comprar</button>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    const itemsHtml = app.state.cart.map(i => `
+                        <div class="cart-item">
+                            <img src="${i.img}" class="cart-img">
+                            <div class="full-width">
+                                <div class="flex justify-between">
+                                    <h4 style="font-size:0.95rem; font-weight:600; max-width:150px;">${i.title}</h4>
+                                    <button onclick="app.cart.remove(${i.id})" style="color:#ef4444; padding:5px;"><i class="ph-bold ph-trash"></i></button>
+                                </div>
+                                <div class="flex justify-between" style="margin-top:8px; align-items:center;">
+                                    <div class="qty-selector">
+                                        <button onclick="app.cart.update(${i.id}, -1)"><i class="ph-bold ph-minus" style="font-size:0.8rem;"></i></button>
+                                        <span class="font-bold text-sm">${i.qty}</span>
+                                        <button onclick="app.cart.update(${i.id}, 1)"><i class="ph-bold ph-plus" style="font-size:0.8rem;"></i></button>
+                                    </div>
+                                    <span class="font-bold">${app.utils.fmt(i.price * i.qty)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    el.innerHTML = `
+                        <div class="container" style="padding-top:20px; padding-bottom:200px;">
+                            <h2 style="margin-bottom:20px;">Meu Carrinho</h2>
+                            ${itemsHtml}
+                        </div>
+                        <div class="detail-fixed-bottom">
+                            <div class="flex justify-between" style="margin-bottom:15px; font-size:1.1rem; font-weight:700;">
+                                <span>Total</span>
+                                <span>${app.utils.fmt(app.cart.total())}</span>
+                            </div>
+                            <button class="btn btn-success" onclick="app.router.go('checkout')">FECHAR PEDIDO</button>
+                        </div>
+                    `;
+                },
+
+                checkout: (el) => {
+                    el.innerHTML = `
+                        <div style="padding:15px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
+                            <button onclick="app.router.go('cart')"><i class="ph-bold ph-arrow-left"></i></button>
+                            <h2 style="font-size:1.2rem;">Finalizar Compra</h2>
+                        </div>
+                        <div class="container" style="padding-top:20px;">
+                            <form onsubmit="app.handlers.submitOrder(event)">
+                                <div class="form-group">
+                                    <label class="form-label">Nome Completo</label>
+                                    <input type="text" class="form-input" id="c-name" required placeholder="Ex: João Silva">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">WhatsApp</label>
+                                    <input type="tel" class="form-input" id="c-phone" required placeholder="(00) 00000-0000">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Endereço</label>
+                                    <input type="text" class="form-input" id="c-addr" required placeholder="Rua, Número, Bairro">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Pagamento</label>
+                                    <select class="form-input" id="c-pay">
+                                        <option value="PIX">PIX (Aprovação Imediata)</option>
+                                        <option value="Cartão">Cartão de Crédito</option>
+                                        <option value="Entrega">Pagamento na Entrega</option>
+                                    </select>
+                                </div>
+                                
+                                <div style="background:var(--surface); padding:20px; border-radius:12px; margin:25px 0; border:1px solid var(--border);">
+                                    <div class="flex justify-between" style="margin-bottom:10px; color:var(--text-light);">
+                                        <span>Subtotal (${app.cart.count()} itens)</span>
+                                        <span>${app.utils.fmt(app.cart.total())}</span>
+                                    </div>
+                                    <div class="flex justify-between" style="margin-bottom:15px; color:var(--accent);">
+                                        <span>Frete</span>
+                                        <span>Grátis</span>
+                                    </div>
+                                    <div class="flex justify-between font-bold" style="font-size:1.2rem; padding-top:15px; border-top:1px dashed var(--border);">
+                                        <span>Total</span>
+                                        <span>${app.utils.fmt(app.cart.total())}</span>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-success">CONFIRMAR PEDIDO</button>
+                            </form>
+                        </div>
+                    `;
+                },
+
+                search: (el) => {
+                    el.innerHTML = `
+                        <div class="search-container">
+                            <div class="search-box">
+                                <i class="ph ph-magnifying-glass" style="font-size:1.2rem; color:var(--text-light);"></i>
+                                <input type="text" placeholder="Buscar na loja..." 
+                                       oninput="app.handlers.search(this.value)" autofocus>
+                            </div>
+                        </div>
+                        <div id="search-results" class="product-grid" style="padding-top:10px;">
+                            <div class="full-width text-center" style="padding-top:50px; color:var(--text-light);">
+                                <i class="ph ph-magnifying-glass" style="font-size:3rem; opacity:0.3;"></i>
+                                <p style="margin-top:10px;">Digite o nome do produto</p>
+                            </div>
+                        </div>
+                        <div style="height:80px"></div>
+                    `;
+                },
+
+                orders: (el) => {
+                    if(app.state.orders.length === 0) {
+                        el.innerHTML = `<div class="container text-center" style="padding-top:60px; color:var(--text-light);">
+                            <i class="ph ph-receipt" style="font-size:3rem; opacity:0.3;"></i>
+                            <p style="margin-top:15px;">Nenhum pedido realizado.</p>
+                        </div>`;
+                        return;
+                    }
+                    el.innerHTML = `<div class="container" style="padding-top:20px; padding-bottom:100px;">
+                        <h2 style="margin-bottom:20px;">Meus Pedidos</h2>
+                        ${app.state.orders.map(o => `
+                            <div style="background:var(--surface); padding:16px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border);">
+                                <div class="flex justify-between" style="margin-bottom:10px;">
+                                    <span class="font-bold">Pedido #${o.id}</span>
+                                    <span class="text-sm" style="color:var(--text-light);">${o.date}</span>
+                                </div>
+                                <div class="text-sm" style="color:var(--text-light); margin-bottom:12px; line-height:1.4;">${o.items}</div>
+                                <div class="flex justify-between align-center" style="border-top:1px solid var(--border); padding-top:10px;">
+                                    <span class="font-bold text-accent">${o.total}</span>
+                                    <span style="font-size:0.75rem; background:var(--bg-body); padding:4px 10px; border-radius:100px; font-weight:600;">${o.status}</span>
+                                </div>
+                            </div>
+                        `).reverse().join('')}
+                    </div>`;
+                },
+
+                success: (el) => {
+                    el.innerHTML = `
+                        <div class="container text-center flex-col" style="height:80vh; justify-content:center;">
+                            <div style="width:80px; height:80px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+                                <i class="ph-bold ph-check" style="font-size:3rem; color:#fff;"></i>
+                            </div>
+                            <h1 style="margin-bottom:10px;">Sucesso!</h1>
+                            <p style="color:var(--text-light); margin-bottom:40px; max-width:300px;">Seu pedido foi realizado. Um atendente da JV Imports entrará em contato em breve.</p>
+                            <button class="btn btn-primary" onclick="app.router.go('home')">Voltar para Loja</button>
+                        </div>
+                    `;
+                }
+            },
+
+            // --- HANDLERS ---
+            handlers: {
+                search: (val) => {
+                    const div = document.getElementById('search-results');
+                    if(!val) { div.innerHTML = ''; return; }
+                    
+                    const res = DB.filter(p => p.title.toLowerCase().includes(val.toLowerCase()));
+                    
+                    if(res.length === 0) {
+                        div.innerHTML = `<p class="full-width text-center" style="margin-top:20px; color:var(--text-light);">Nenhum produto encontrado.</p>`;
+                        return;
+                    }
+
+                    div.innerHTML = res.map(p => `
+                        <div class="product-card" onclick="app.router.go('product', ${p.id})">
+                            <img src="${p.img}" class="product-img">
+                            <div class="product-info">
+                                <h3 class="p-title">${p.title}</h3>
+                                <div class="p-current">${app.utils.fmt(p.price)}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                },
+
+                submitOrder: (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('c-name').value;
+                    
+                    const order = {
+                        id: Math.floor(1000 + Math.random() * 9000),
+                        date: new Date().toLocaleDateString(),
+                        total: app.utils.fmt(app.cart.total()),
+                        items: app.state.cart.map(i => `${i.qty}x ${i.title}`).join(', '),
+                        status: 'Pendente'
+                    };
+                    
+                    app.state.orders.push(order);
+                    localStorage.setItem('jv_orders', JSON.stringify(app.state.orders));
+                    
+                    // Limpa carrinho e vai para sucesso
+                    app.state.cart = [];
+                    app.cart.save();
+                    app.router.go('success');
+                }
+            }
+        };
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            app.theme.init();
+            app.ui.updateBadge();
+            app.router.go('home');
+        });
+    </script>
+</body>
+</html>
