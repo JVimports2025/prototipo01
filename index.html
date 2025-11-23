@@ -3,657 +3,757 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JV Imports | Loja Virtual</title>
-    <!-- Ícones Phosphor -->
+    <title>JV Imports | Premium Store</title>
+    
+    <!-- Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- PagBank SDK -->
+    <script src="https://assets.pagseguro.com.br/checkout-sdk-js/rc/dist/browser/pagseguro.min.js"></script>
+
     <style>
         :root {
+            /* --- LIGHT MODE DEFINITIONS --- */
             --primary: #000000;
             --on-primary: #ffffff;
-            --secondary: #f4f4f5;
-            --accent: #2ecc71;
-            --accent-hover: #27ae60;
-            --bg-body: #eef2f5;
-            --bg-app: #f8f9fa;
-            --surface: #ffffff;
-            --text-main: #1f2937;
+            --secondary: #f3f4f6;      /* Slightly darker gray for better definition */
+            --bg-body: #f9fafb;        /* Off-white body */
+            --surface: #ffffff;        /* Pure white cards */
+            --border: #e5e7eb;         /* Defined border gray */
+            --text-main: #111827;      /* Near black */
             --text-light: #6b7280;
-            --border: #e5e7eb;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-            --radius: 16px;
-            --header-height: 65px;
+            --accent-error: #ef4444;
+            --accent-success: #10b981;
+            
+            /* Visuals */
+            --radius: 12px;
+            --header-height: 72px;
             --nav-height: 65px;
-            --app-max-width: 480px;
+            --max-width: 1200px;
+            
+            /* Shadows for Light Mode Depth */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
+
         [data-theme="dark"] {
+            /* --- DARK MODE DEFINITIONS --- */
             --primary: #ffffff;
             --on-primary: #000000;
             --secondary: #27272a;
-            --accent: #4ade80;
-            --accent-hover: #22c55e;
-            --bg-body: #121212;
-            --bg-app: #18181b;
-            --surface: #27272a;
-            --text-main: #f3f4f6;
-            --text-light: #9ca3af;
+            --bg-body: #09090b;
+            --surface: #18181b;
             --border: #3f3f46;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4);
+            --text-main: #f3f4f6;
+            --text-light: #a1a1aa;
+            
+            /* Dark mode usually relies less on shadows and more on borders/bg distinction */
+            --shadow-sm: none;
+            --shadow-md: none; 
+            --shadow-lg: none;
         }
 
+        /* Base Reset */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
-            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
-            background: var(--bg-body); 
-            color: var(--text-main); 
-            min-height: 100vh;
-            display: flex;
-            justify-content: center; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: var(--bg-body); color: var(--text-main); 
+            min-height: 100vh; display: flex; flex-direction: column;
+            line-height: 1.5;
         }
-        #app-wrapper {
-            width: 100%;
-            max-width: var(--app-max-width);
-            background: var(--bg-app);
-            min-height: 100vh;
-            position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            padding-bottom: calc(var(--nav-height) + 30px);
-            overflow-x: hidden;
-        }
-
-        button { cursor: pointer; border: none; outline: none; background: none; font-family: inherit; color: inherit; }
-        input, textarea, select { font-family: inherit; color: inherit; }
         a { text-decoration: none; color: inherit; }
-        ul { list-style: none; }
-        img { display: block; max-width: 100%; }
+        button { cursor: pointer; font-family: inherit; }
 
-        .container { padding: 0 20px; }
-        .flex { display: flex; align-items: center; }
-        .flex-col { flex-direction: column; }
-        .justify-between { justify-content: space-between; }
-        .gap-10 { gap: 10px; }
-        .full-width { width: 100%; }
-        .text-center { text-align: center; }
-        .font-bold { font-weight: 700; }
-        .text-sm { font-size: 0.875rem; }
-        .text-accent { color: var(--accent); }
-        .hidden { display: none !important; }
-
-        .btn {
-            background: var(--text-main); color: var(--bg-app); padding: 14px;
-            border-radius: var(--radius); font-weight: 600; text-align: center;
-            transition: 0.2s; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;
+        /* --- LAYOUT --- */
+        .container {
+            width: 100%; max-width: var(--max-width);
+            margin: 0 auto; padding: 0 24px;
         }
-        .btn:active { transform: scale(0.98); opacity: 0.9; }
-        .btn-primary { background: var(--text-main); color: var(--bg-app); }
-        .btn-success { background: var(--accent); color: #000; }
-        .btn-outline { border: 1px solid var(--border); color: var(--text-main); background: transparent; }
-        
+
+        #main-content {
+            flex: 1;
+            padding-top: 30px;
+            padding-bottom: 80px; /* Space for mobile nav */
+        }
+        @media (min-width: 768px) {
+            #main-content { padding-bottom: 60px; }
+        }
+
+        /* --- HEADER --- */
         header {
-            position: sticky; top: 0; left: 0; width: 100%; height: var(--header-height);
-            background: var(--surface); z-index: 100;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px;
-            box-shadow: var(--shadow-sm);
+            height: var(--header-height);
+            background: var(--surface);
             border-bottom: 1px solid var(--border);
-        }
-        .logo-area, .brand-container { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-
-        /* -------- LOGO CORRIGIDO E RESPONSIVO -------- */
-        .logo-img {
-            height: 45px; 
-            width: auto;
-            object-fit: contain;
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
-            mix-blend-mode: multiply; 
-        }
-        .logo-area:hover .logo-img,
-        .brand-container:hover .logo-img {
-            transform: scale(1.15) rotate(-3deg);
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
-        }
-        [data-theme="dark"] .logo-img {
-            filter: invert(1) grayscale(1) brightness(1.2);
-            mix-blend-mode: screen; 
-        }
-
-        #fallback-logo { display: none; }
-        .logo-text { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; }
-        .header-actions { display: flex; gap: 15px; align-items: center; }
-        .header-btn { font-size: 1.5rem; position: relative; padding: 5px; }
-        .badge {
-            position: absolute; top: 0; right: 0; background: var(--accent);
-            color: #000; font-size: 0.65rem; padding: 2px 6px;
-            border-radius: 10px; font-weight: bold; min-width: 18px; text-align: center;
-        }
-        .search-container { padding: 15px 20px; background: var(--bg-app); position: sticky; top: var(--header-height); z-index: 90; }
-        .search-box {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 12px; padding: 10px 15px; display: flex; align-items: center;
+            position: sticky; top: 0; z-index: 100;
             box-shadow: var(--shadow-sm);
         }
-        .search-box input { border: none; background: transparent; width: 100%; margin-left: 10px; outline: none; }
-        .nav-bar {
-            position: fixed; bottom: 0; 
-            width: 100%; max-width: var(--app-max-width);
-            height: var(--nav-height);
+        .header-inner {
+            height: 100%; display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo-img { height: 42px; width: auto; display: block; }
+        [data-theme="light"] .logo-img { mix-blend-mode: multiply; }
+        [data-theme="dark"] .logo-img { filter: invert(1); mix-blend-mode: screen; }
+
+        /* Desktop Nav */
+        .desktop-nav { display: none; gap: 32px; font-weight: 500; font-size: 0.95rem; }
+        .desktop-nav a { color: var(--text-light); transition: color 0.2s; }
+        .desktop-nav a:hover, .desktop-nav a.active { color: var(--text-main); font-weight: 600; }
+        @media (min-width: 768px) { .desktop-nav { display: flex; } }
+
+        /* --- CARDS & CONTAINERS --- */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        /* Definition for Light Mode */
+        [data-theme="light"] .card {
+            box-shadow: var(--shadow-sm);
+        }
+        [data-theme="light"] .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+            border-color: #d1d5db; /* Slightly darker border on hover */
+        }
+
+        /* --- PRODUCT GRID --- */
+        .product-grid {
+            display: grid; gap: 24px;
+            grid-template-columns: repeat(2, 1fr);
+        }
+        @media (min-width: 768px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1024px) { .product-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        .card-img-wrapper {
+            position: relative; padding-top: 100%; /* 1:1 Aspect Ratio */
+            background: var(--secondary); overflow: hidden;
+        }
+        .card-img {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; transition: transform 0.3s;
+            mix-blend-mode: multiply;
+        }
+        [data-theme="dark"] .card-img { mix-blend-mode: normal; opacity: 0.9; }
+        .card:hover .card-img { transform: scale(1.05); }
+
+        .card-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+        
+        /* --- BUTTONS --- */
+        .btn {
+            background: var(--primary); color: var(--on-primary);
+            padding: 12px 20px; border-radius: 8px; font-weight: 600;
+            border: 2px solid transparent; 
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.2s; font-size: 0.95rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .btn:active { transform: translateY(0); }
+        
+        .btn-outline {
+            background: transparent; color: var(--text-main);
+            border: 2px solid var(--border); box-shadow: none;
+        }
+        .btn-outline:hover {
+            border-color: var(--text-main); background: var(--surface);
+        }
+        
+        .btn-sm { padding: 8px 14px; font-size: 0.85rem; }
+
+        /* --- INPUTS --- */
+        .form-input {
+            width: 100%; padding: 12px 16px; 
+            border: 1px solid var(--border);
+            border-radius: 8px; font-size: 0.95rem; 
+            background: var(--surface); color: var(--text-main); 
+            outline: none; transition: border-color 0.2s;
+        }
+        /* High contrast focus for inputs */
+        .form-input:focus { border-color: var(--primary); ring: 2px solid var(--primary); }
+        .form-label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* --- CHECKOUT LAYOUT --- */
+        .checkout-layout {
+            display: grid; gap: 30px;
+            grid-template-columns: 1fr;
+        }
+        @media(min-width: 900px) {
+            .checkout-layout { grid-template-columns: 1.8fr 1.2fr; align-items: start; }
+        }
+
+        /* --- FOOTER --- */
+        footer {
             background: var(--surface); border-top: 1px solid var(--border);
+            padding: 60px 0 30px; margin-top: auto;
+        }
+        .footer-links {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px; margin-bottom: 40px;
+        }
+        .footer-links h4 { font-weight: 700; margin-bottom: 20px; font-size: 1rem; }
+        .footer-links ul li { margin-bottom: 12px; color: var(--text-light); font-size: 0.9rem; cursor: pointer; }
+        .footer-links ul li:hover { color: var(--text-main); text-decoration: underline; }
+
+        /* --- MOBILE NAV --- */
+        .mobile-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            height: var(--nav-height); background: var(--surface);
+            border-top: 1px solid var(--border);
             display: flex; justify-content: space-around; align-items: center;
             z-index: 90; padding-bottom: env(safe-area-inset-bottom);
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
         }
         .nav-item {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: var(--text-light); flex: 1; height: 100%; transition: 0.2s;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            color: var(--text-light); border: none; background: none; flex: 1;
         }
-        .nav-item i { font-size: 1.5rem; margin-bottom: 4px; }
-        .nav-item span { font-size: 0.7rem; font-weight: 600; }
-        .nav-item.active { color: var(--text-main); }
-        .nav-item.active i { color: var(--accent); weight: fill; }
-        .view { display: none; animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .categories-wrapper { padding: 10px 20px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-        .categories-wrapper::-webkit-scrollbar { display: none; }
-        .categories { display: flex; gap: 10px; }
-        .cat-chip {
-            background: var(--surface); padding: 8px 16px; border-radius: 100px; font-size: 0.85rem;
-            white-space: nowrap; border: 1px solid var(--border); font-weight: 600; color: var(--text-light);
-            transition: 0.2s;
-        }
-        .cat-chip.active { background: var(--text-main); color: var(--bg-app); border-color: var(--text-main); }
-        .product-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 20px 20px;
-        }
-        .product-card {
-            background: var(--surface); border-radius: var(--radius); overflow: hidden;
-            box-shadow: var(--shadow-sm); position: relative; display: flex; flex-direction: column;
-            border: 1px solid var(--border); transition: transform 0.2s;
-        }
-        .product-card:active { transform: scale(0.98); }
-        .product-img {
-            width: 100%; height: 160px; object-fit: cover; background: var(--secondary);
-        }
-        .discount-tag {
-            position: absolute; top: 8px; left: 8px; background: var(--accent);
-            color: #000; font-size: 0.7rem; font-weight: bold;
-            padding: 4px 8px; border-radius: 6px;
-        }
-        .product-info { padding: 12px; flex: 1; display: flex; flex-direction: column; }
-        .p-cat { font-size: 0.7rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 4px; }
-        .p-title { font-size: 0.95rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 40px; }
-        .p-price-block { margin-top: auto; }
-        .p-old { font-size: 0.75rem; text-decoration: line-through; color: var(--text-light); }
-        .p-current { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
-        .add-btn {
-            margin-top: 10px; width: 100%; padding: 8px; border-radius: 8px;
-            background: var(--secondary); color: var(--text-main); font-weight: 600; font-size: 0.8rem;
-        }
-        .detail-header { position: relative; }
-        .detail-img { width: 100%; height: 400px; object-fit: cover; background: var(--secondary); }
-        .back-float { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); color: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .detail-body { 
-            background: var(--surface); border-radius: 24px 24px 0 0; margin-top: -30px; position: relative; 
-            padding: 24px 20px 100px; 
-            min-height: 50vh; box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
-        }
-        .detail-fixed-bottom {
-            position: fixed; bottom: 0; left: 0; width: 100%; max-width: var(--app-max-width);
-            background: var(--surface); padding: 15px 20px; border-top: 1px solid var(--border);
-            z-index: 100; padding-bottom: calc(15px + env(safe-area-inset-bottom));
-        }
-        .cart-item {
-            background: var(--surface); padding: 12px; border-radius: 12px;
-            margin-bottom: 12px; display: flex; gap: 15px; align-items: center;
-            border: 1px solid var(--border);
-        }
-        .cart-img { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; background: var(--secondary); }
-        .qty-selector { display: flex; align-items: center; gap: 12px; background: var(--secondary); border-radius: 8px; padding: 4px 8px; width: fit-content; margin-top: 8px; }
-        .form-group { margin-bottom: 16px; }
-        .form-label { display: block; font-size: 0.9rem; margin-bottom: 8px; font-weight: 500; color: var(--text-light); }
-        .form-input {
-            width: 100%; padding: 14px; border: 1px solid var(--border);
-            border-radius: 12px; font-size: 1rem; background: var(--surface);
-            transition: border-color 0.2s;
-        }
-        .form-input:focus { border-color: var(--text-main); }
-        #toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
-            background: var(--text-main); color: var(--bg-app); padding: 12px 24px;
-            border-radius: 50px; z-index: 2000; box-shadow: var(--shadow-md);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0;
-            display: flex; align-items: center; gap: 10px; font-weight: 500; white-space: nowrap;
-        }
-        #toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .nav-item.active { color: var(--primary); }
+        @media (min-width: 768px) { .mobile-nav { display: none; } }
 
-        @media (max-width: 600px) {
-            #app-wrapper { border-radius: 0; box-shadow: none; min-height: 100vh; }
-            header { padding-left: 12px; padding-right: 12px; }
-            .logo-img { height: 38px; }
+        /* --- UTILS --- */
+        .badge {
+            background: var(--primary); color: var(--on-primary);
+            font-size: 0.7rem; padding: 2px 6px; border-radius: 99px;
+            position: absolute; top: -6px; right: -6px; font-weight: bold;
         }
-        @media (min-width: 601px) {
-            body { background: var(--bg-body); }
-            #app-wrapper { margin: 35px auto; border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); min-height: 80vh; }
-            header { border-radius: 20px 20px 0 0; padding-left: 24px; padding-right: 24px; }
-            .logo-img { height: 52px; }
+        .tag {
+            padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; 
+            text-transform: uppercase; display: inline-block;
         }
-        @media (min-width: 900px) {
-            #app-wrapper { max-width: 520px; }
+        .tag-new { background: var(--primary); color: var(--on-primary); }
+        .hidden { display: none !important; }
+
+        /* Toast */
+        #toast {
+            position: fixed; top: 24px; right: 24px;
+            background: var(--primary); color: var(--on-primary);
+            padding: 16px 24px; border-radius: 12px;
+            display: flex; align-items: center; gap: 12px;
+            transform: translateY(-150%); opacity: 0; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2000; box-shadow: var(--shadow-lg); font-weight: 500;
         }
-        @media (min-width: 500px) {
-            .nav-bar, .detail-fixed-bottom { left: 50%; transform: translateX(-50%); }
-        }
+        #toast.visible { transform: translateY(0); opacity: 1; }
     </style>
 </head>
 <body>
-    <div id="app-wrapper">
-        <div id="toast"><i class="ph-fill ph-check-circle"></i> <span id="toast-msg">Mensagem</span></div>
-        <header>
-            <div class="logo-area brand-container" onclick="app.router.go('home')">
-                <img src="./102416.jpg" alt="JV Imports Logo" class="logo-img" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='block'">
-                <span id="fallback-logo" class="logo-text" style="display:none;">JV <span class="text-accent">IMPORTS</span></span>
-            </div>
-            <div class="header-actions">
-                <button class="header-btn" onclick="app.theme.toggle()" aria-label="Alternar Tema">
-                    <i id="theme-icon" class="ph ph-moon"></i>
-                </button>
-                <button class="header-btn" onclick="app.router.go('cart')" aria-label="Carrinho">
-                    <i class="ph ph-shopping-cart"></i>
-                    <span id="header-cart-count" class="badge hidden">0</span>
-                </button>
-            </div>
-        </header>
-        <main id="app-root"></main>
-        <nav class="nav-bar">
-            <button class="nav-item active" onclick="app.router.go('home')" id="nav-home">
-                <i class="ph ph-house"></i>
-                <span>Início</span>
-            </button>
-            <button class="nav-item" onclick="app.router.go('search')" id="nav-search">
-                <i class="ph ph-magnifying-glass"></i>
-                <span>Buscar</span>
-            </button>
-            <button class="nav-item" onclick="app.router.go('cart')" id="nav-cart">
-                <i class="ph ph-shopping-cart"></i>
-                <span>Carrinho</span>
-            </button>
-            <button class="nav-item" onclick="app.router.go('orders')" id="nav-orders">
-                <i class="ph ph-receipt"></i>
-                <span>Pedidos</span>
-            </button>
-        </nav>
+
+    <!-- Notification -->
+    <div id="toast">
+        <i class="ph-fill ph-info"></i> 
+        <span id="toast-msg">Notificação</span>
     </div>
-    <script>
-        // --- BASE DE DADOS ---
-        const DB = [
-            { id: 1, title: "iPhone 14 Pro Max 256GB", price: 7899.00, oldPrice: 8500.00, cat: "eletronicos", img: "https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?auto=format&fit=crop&w=500&q=80", desc: "A potência máxima da Apple. Câmera de 48MP, Ilha Dinâmica e processador A16 Bionic." },
-            { id: 2, title: "AirPods Pro (2ª Geração)", price: 1499.90, oldPrice: 1899.00, cat: "acessorios", img: "https://images.unsplash.com/photo-1629367494173-c78a56567877?auto=format&fit=crop&w=500&q=80", desc: "Cancelamento Ativo de Ruído 2x melhor e Áudio Espacial Personalizado." },
-            { id: 3, title: "MacBook Air M2 Midnight", price: 8299.00, oldPrice: 9500.00, cat: "eletronicos", img: "https://images.unsplash.com/photo-1661963212519-94dd78414133?auto=format&fit=crop&w=500&q=80", desc: "Design ultrafino, chip M2 superpotente e bateria para o dia todo." },
-            { id: 4, title: "Perfume Bleu de Chanel", price: 850.00, oldPrice: 980.00, cat: "perfumes", img: "https://images.unsplash.com/photo-1523293182086-7651a899d60f?auto=format&fit=crop&w=500&q=80", desc: "Fragrância amadeirada aromática. Elegância e liberdade masculina." },
-            { id: 5, title: "Tênis Jordan 1 Retro High", price: 1299.90, oldPrice: 1599.00, cat: "moda", img: "https://images.unsplash.com/photo-1579338559194-a162d19bf842?auto=format&fit=crop&w=500&q=80", desc: "O clássico que iniciou tudo. Estilo e conforto para o dia a dia." },
-            { id: 6, title: "JBL Boombox 3 Wi-Fi", price: 2199.00, oldPrice: 2600.00, cat: "eletronicos", img: "https://images.unsplash.com/photo-1610603826233-d12b5c76023b?auto=format&fit=crop&w=500&q=80", desc: "Som massivo o dia todo. Resistente à água e poeira." }
-        ];
 
-        // --- APLICAÇÃO ---
-        const app = {
-            state: {
-                cart: JSON.parse(localStorage.getItem('jv_cart')) || [],
-                orders: JSON.parse(localStorage.getItem('jv_orders')) || [],
-                theme: localStorage.getItem('jv_theme') || 'light',
-                filter: 'all'
-            },
+    <!-- Header -->
+    <header>
+        <div class="container header-inner">
+            <div class="flex" style="display:flex; align-items:center; gap:12px; cursor: pointer;" onclick="app.router.go('home')">
+                <img src="./102416.png" alt="JV Imports" class="logo-img" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='block'">
+                <div id="fallback-logo" style="display:none; font-weight:900; font-size:1.4rem; letter-spacing:-1px;">
+                    JV<span style="font-weight:300;">IMPORTS</span>
+                </div>
+            </div>
 
-            // --- GERENCIADOR DE TEMA ---
-            theme: {
-                init: () => {
-                    if (!localStorage.getItem('jv_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                        app.state.theme = 'dark';
-                    }
-                    app.theme.apply(app.state.theme);
-                },
-                toggle: () => {
-                    app.state.theme = app.state.theme === 'light' ? 'dark' : 'light';
-                    app.theme.apply(app.state.theme);
-                },
-                apply: (theme) => {
-                    document.documentElement.setAttribute('data-theme', theme);
-                    localStorage.setItem('jv_theme', theme);
-                    const icon = document.getElementById('theme-icon');
-                    if(icon) {
-                        icon.className = theme === 'light' ? 'ph ph-moon' : 'ph ph-sun';
-                    }
-                }
-            },
+            <nav class="desktop-nav">
+                <a href="#" onclick="app.router.go('home')">Início</a>
+                <a href="#" onclick="app.router.go('home', {filter:'moda'})">Moda</a>
+                <a href="#" onclick="app.router.go('home', {filter:'eletronicos'})">Eletrônicos</a>
+                <a href="#" onclick="app.router.go('profile')">Meus Pedidos</a>
+            </nav>
 
-            utils: {
-                fmt: (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-                toast: (msg, type = 'success') => {
-                    const t = document.getElementById('toast');
-                    t.innerHTML = `<i class="ph-fill ${type === 'success' ? 'ph-check-circle' : 'ph-warning-circle'}"></i> <span>${msg}</span>`;
-                    t.classList.add('visible');
-                    setTimeout(() => t.classList.remove('visible'), 3000);
-                }
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button onclick="app.router.go('search')" class="btn-outline" style="border:none; padding:8px; border-radius:50%;">
+                    <i class="ph ph-magnifying-glass" style="font-size:1.4rem;"></i>
+                </button>
+                <button onclick="app.router.go('cart')" style="background:none; border:none; position:relative; padding:8px; color:inherit;">
+                    <i class="ph ph-shopping-bag" style="font-size:1.4rem;"></i>
+                    <span id="header-badge" class="badge hidden">0</span>
+                </button>
+                <button onclick="app.theme.toggle()" style="background:none; border:none; padding:8px; color:inherit;">
+                    <i id="theme-icon" class="ph ph-moon" style="font-size:1.4rem;"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content" class="container"></main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <div>
+                    <h4>Sobre a JV Imports</h4>
+                    <p style="color:var(--text-light); font-size:0.9rem; line-height:1.6; margin-bottom:10px;">
+                        Sua loja premium de importados. Trazemos o melhor da tecnologia e moda mundial diretamente para o Brasil com segurança e agilidade.
+                    </p>
+                    <div style="display:flex; gap:10px; margin-top:15px;">
+                        <i class="ph-fill ph-instagram-logo" style="font-size:1.5rem; cursor:pointer;"></i>
+                        <i class="ph-fill ph-facebook-logo" style="font-size:1.5rem; cursor:pointer;"></i>
+                        <i class="ph-fill ph-whatsapp-logo" style="font-size:1.5rem; cursor:pointer;"></i>
+                    </div>
+                </div>
+                <div>
+                    <h4>Categorias</h4>
+                    <ul>
+                        <li onclick="app.router.go('home', {filter:'moda'})">Moda Masculina</li>
+                        <li onclick="app.router.go('home', {filter:'eletronicos'})">Eletrônicos</li>
+                        <li onclick="app.router.go('home', {filter:'acessorios'})">Acessórios</li>
+                        <li onclick="app.router.go('home', {filter:'calcados'})">Calçados</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Atendimento</h4>
+                    <ul>
+                        <li>Central de Ajuda</li>
+                        <li>Acompanhar Pedido</li>
+                        <li>Trocas e Devoluções</li>
+                        <li>Política de Privacidade</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="border-top:1px solid var(--border); padding-top:20px; text-align:center; color:var(--text-light); font-size:0.85rem;">
+                &copy; 2025 JV Imports. Todos os direitos reservados.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Nav -->
+    <nav class="mobile-nav">
+        <button class="nav-item active" id="nav-home" onclick="app.router.go('home')">
+            <i class="ph ph-house" style="font-size:1.5rem;"></i>
+            <span style="font-size:0.7rem; font-weight:500;">Início</span>
+        </button>
+        <button class="nav-item" id="nav-search" onclick="app.router.go('search')">
+            <i class="ph ph-magnifying-glass" style="font-size:1.5rem;"></i>
+            <span style="font-size:0.7rem; font-weight:500;">Buscar</span>
+        </button>
+        <button class="nav-item" id="nav-cart" onclick="app.router.go('cart')">
+            <i class="ph ph-shopping-bag" style="font-size:1.5rem;"></i>
+            <span style="font-size:0.7rem; font-weight:500;">Carrinho</span>
+        </button>
+        <button class="nav-item" id="nav-profile" onclick="app.router.go('profile')">
+            <i class="ph ph-user" style="font-size:1.5rem;"></i>
+            <span style="font-size:0.7rem; font-weight:500;">Perfil</span>
+        </button>
+    </nav>
+
+<script>
+    // --- CONFIG ---
+    const CONFIG = {
+        // Real logic placeholder
+        firebase: { apiKey: "MOCK_KEY" } 
+    };
+
+    // --- DATA ---
+    const DB = [
+        { id: 1, title: "iPhone 15 Pro Max Titanium", price: 8999.00, cat: "eletronicos", img: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&q=90", isNew: true },
+        { id: 2, title: "MacBook Air M2 Midnight", price: 7499.00, cat: "eletronicos", img: "https://images.unsplash.com/photo-1661963212519-94dd78414133?w=600&q=90", isNew: false },
+        { id: 3, title: "Jaqueta Bomber Premium", price: 399.90, cat: "moda", img: "https://images.unsplash.com/photo-1551028919-ac7bcb99015b?w=600&q=90", isNew: false },
+        { id: 4, title: "Nike Air Jordan 1 High", price: 1199.90, cat: "calcados", img: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&q=90", isNew: true },
+        { id: 5, title: "Sony WH-1000XM5", price: 2200.00, cat: "acessorios", img: "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=600&q=90", isNew: false },
+        { id: 6, title: "Ray-Ban Wayfarer Classic", price: 650.00, cat: "acessorios", img: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&q=90", isNew: false },
+        { id: 7, title: "Apple Watch Ultra 2", price: 5299.00, cat: "acessorios", img: "https://images.unsplash.com/photo-1664730022301-249761e4d248?w=600&q=90", isNew: true },
+        { id: 8, title: "Perfume Bleu de Chanel", price: 850.00, cat: "moda", img: "https://images.unsplash.com/photo-1523293182086-7651a899d60f?w=600&q=90", isNew: false }
+    ];
+
+    const app = {
+        state: {
+            cart: JSON.parse(localStorage.getItem('jv_cart')) || [],
+            userAddress: JSON.parse(localStorage.getItem('jv_address')) || { street: '', number: '', zip: '' },
+            user: JSON.parse(localStorage.getItem('jv_user')) || null,
+            currentView: 'home'
+        },
+
+        init: () => {
+            const savedTheme = localStorage.getItem('jv_theme');
+            if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            app.ui.updateBadge();
+            app.router.go('home');
+        },
+
+        theme: {
+            toggle: () => {
+                const current = document.documentElement.getAttribute('data-theme') || 'light';
+                const next = current === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem('jv_theme', next);
+            }
+        },
+
+        utils: {
+            fmt: n => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+            toast: (msg) => {
+                const t = document.getElementById('toast');
+                document.getElementById('toast-msg').innerText = msg;
+                t.classList.add('visible');
+                setTimeout(() => t.classList.remove('visible'), 3000);
             },
-            cart: {
-                add: (id) => {
-                    const p = DB.find(x => x.id === id);
-                    const item = app.state.cart.find(i => i.id === id);
-                    if(item) item.qty++; else app.state.cart.push({...p, qty: 1});
+            maskCard: v => v.replace(/\D/g,'').replace(/(\d{4})(\d)/g, '$1 ').trim().substr(0,19)
+        },
+
+        cart: {
+            add: (id) => {
+                const p = DB.find(x => x.id === id);
+                const exist = app.state.cart.find(x => x.id === id);
+                if(exist) exist.qty++; else app.state.cart.push({...p, qty: 1});
+                app.cart.save();
+                app.utils.toast("Adicionado ao carrinho!");
+            },
+            update: (id, d) => {
+                const item = app.state.cart.find(x => x.id === id);
+                if(item) {
+                    item.qty += d;
+                    if(item.qty <= 0) app.state.cart = app.state.cart.filter(x => x.id !== id);
                     app.cart.save();
-                    app.utils.toast(`Adicionado ao carrinho!`);
-                },
-                update: (id, d) => {
-                    const item = app.state.cart.find(i => i.id === id);
-                    if(item) {
-                        item.qty += d;
-                        if(item.qty <= 0) app.state.cart = app.state.cart.filter(i => i.id !== id);
-                        app.cart.save();
-                        if(app.state.currentView === 'cart') app.views.cart();
-                    }
-                },
-                remove: (id) => {
-                    app.state.cart = app.state.cart.filter(i => i.id !== id);
-                    app.cart.save();
-                    if(app.state.currentView === 'cart') app.views.cart();
-                },
-                save: () => {
-                    localStorage.setItem('jv_cart', JSON.stringify(app.state.cart));
-                    app.ui.updateBadge();
-                },
-                total: () => app.state.cart.reduce((a, b) => a + (b.price * b.qty), 0),
-                count: () => app.state.cart.reduce((a, b) => a + b.qty, 0)
-            },
-
-            ui: {
-                updateBadge: () => {
-                    const c = app.cart.count();
-                    const el = document.getElementById('header-cart-count');
-                    el.innerText = c;
-                    c > 0 ? el.classList.remove('hidden') : el.classList.add('hidden');
-                },
-                navActive: (id) => {
-                    document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-                    const el = document.getElementById(`nav-${id}`);
-                    if(el) el.classList.add('active');
-                    else if(id === 'product' || id === 'checkout') document.getElementById('nav-home').classList.add('active');
+                    app.router.render();
                 }
             },
-            router: {
-                go: (view, param = null) => {
-                    app.state.currentView = view;
-                    app.ui.navActive(view);
-                    window.scrollTo(0,0);
-                    const root = document.getElementById('app-root');
-                    root.innerHTML = '';
-                    const nav = document.querySelector('.nav-bar');
-                    if(view === 'product' || view === 'checkout') nav.style.display = 'none';
-                    else nav.style.display = 'flex';
+            total: () => app.state.cart.reduce((a,b) => a + (b.price * b.qty), 0),
+            save: () => {
+                localStorage.setItem('jv_cart', JSON.stringify(app.state.cart));
+                app.ui.updateBadge();
+            }
+        },
 
-                    switch(view) {
-                        case 'home': app.views.home(root); break;
-                        case 'search': app.views.search(root); break;
-                        case 'product': app.views.product(root, param); break;
-                        case 'cart': app.views.cart(root); break;
-                        case 'checkout': app.views.checkout(root); break;
-                        case 'orders': app.views.orders(root); break;
-                        case 'success': app.views.success(root); break;
-                    }
-                }
+        ui: {
+            updateBadge: () => {
+                const count = app.state.cart.reduce((a,b) => a + b.qty, 0);
+                const el = document.getElementById('header-badge');
+                el.innerText = count;
+                count > 0 ? el.classList.remove('hidden') : el.classList.add('hidden');
             },
-            views: {
-                home: (el) => {
-                    const cats = [{id:'all', l:'Todos'}, {id:'eletronicos', l:'Eletrônicos'}, {id:'moda', l:'Moda'}, {id:'acessorios', l:'Acessórios'}];
-                    const catHtml = cats.map(c => 
-                        `<button class="cat-chip ${app.state.filter === c.id ? 'active' : ''}" 
-                          onclick="app.state.filter='${c.id}'; app.router.go('home')">${c.l}</button>`
-                    ).join('');
-                    const list = app.state.filter === 'all' ? DB : DB.filter(p => p.cat === app.state.filter);
-                    const gridHtml = list.map(p => `
-                        <div class="product-card" onclick="app.router.go('product', ${p.id})">
-                            <span class="discount-tag">-${Math.round((1 - p.price/p.oldPrice)*100)}% OFF</span>
-                            <img src="${p.img}" class="product-img" loading="lazy">
-                            <div class="product-info">
-                                <span class="p-cat">${p.cat}</span>
-                                <h3 class="p-title">${p.title}</h3>
-                                <div class="p-price-block">
-                                    <span class="p-old">${app.utils.fmt(p.oldPrice)}</span>
-                                    <div class="p-current">${app.utils.fmt(p.price)}</div>
-                                </div>
-                                <button class="add-btn" onclick="event.stopPropagation(); app.cart.add(${p.id})">Comprar</button>
-                            </div>
-                        </div>
-                    `).join('');
+            setNav: (id) => {
+                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                const el = document.getElementById('nav-'+id);
+                if(el) el.classList.add('active');
+                
+                // Update desktop nav links
+                document.querySelectorAll('.desktop-nav a').forEach(a => a.classList.remove('active'));
+                if(id === 'home') document.querySelector('.desktop-nav a').classList.add('active');
+            }
+        },
 
-                    el.innerHTML = `
-                        <div class="categories-wrapper"><div class="categories">${catHtml}</div></div>
-                        <div class="product-grid" style="margin-top:15px;">${gridHtml}</div>
-                        <div style="height:80px"></div>
-                    `;
-                    document.querySelector('.nav-bar').style.display = 'flex';
-                },
-                product: (el, id) => {
-                    const p = DB.find(x => x.id === id);
-                    if(!p) return app.router.go('home');
-                    el.innerHTML = `
-                        <div class="detail-header">
-                            <button class="back-float" onclick="app.router.go('home')"><i class="ph-bold ph-arrow-left"></i></button>
-                            <img src="${p.img}" class="detail-img">
+        router: {
+            go: (view, props = {}) => {
+                app.state.currentView = view;
+                app.state.viewProps = props;
+                window.scrollTo(0,0);
+                app.router.render();
+                
+                const map = { 'home':'home', 'cart':'cart', 'search':'search', 'profile':'profile' };
+                app.ui.setNav(map[view] || 'home');
+            },
+            render: () => {
+                const root = document.getElementById('main-content');
+                root.innerHTML = app.views[app.state.currentView]();
+            }
+        },
+
+        views: {
+            home: () => {
+                const filter = app.state.viewProps?.filter || 'all';
+                const products = filter === 'all' ? DB : DB.filter(p => p.cat === filter);
+                
+                return `
+                    ${filter === 'all' ? `
+                        <div style="background:var(--secondary); border-radius:var(--radius); padding:40px 20px; text-align:center; margin-bottom:40px; border:1px solid var(--border);">
+                            <h1 style="font-size:2.5rem; font-weight:800; margin-bottom:10px; letter-spacing:-1px;">Nova Coleção 2025</h1>
+                            <p style="color:var(--text-light); max-width:500px; margin:0 auto 20px;">
+                                As tendências mundiais chegaram. Design exclusivo e qualidade premium.
+                            </p>
+                            <button class="btn" onclick="app.router.go('search')">Ver Produtos</button>
                         </div>
-                        <div class="detail-body">
-                            <div class="flex justify-between" style="align-items:flex-start; margin-bottom:15px;">
-                                <div>
-                                    <span style="text-transform:uppercase; font-size:0.8rem; color:var(--text-light); letter-spacing:1px;">${p.cat}</span>
-                                    <h1 style="font-size:1.5rem; line-height:1.2; margin-top:5px;">${p.title}</h1>
+                    ` : ''}
+                    
+                    <div class="flex" style="justify-content:space-between; margin-bottom:24px;">
+                        <h2 style="text-transform:capitalize; font-weight:700;">${filter === 'all' ? 'Destaques' : filter}</h2>
+                        ${filter !== 'all' ? `<button class="btn-sm btn-outline" onclick="app.router.go('home')">Limpar Filtro</button>` : ''}
+                    </div>
+
+                    <div class="product-grid">
+                        ${products.map(p => `
+                            <div class="card" style="cursor:pointer;" onclick="app.router.go('product', {id:${p.id}})">
+                                <div class="card-img-wrapper">
+                                    <img src="${p.img}" class="card-img">
+                                    ${p.isNew ? `<span class="tag tag-new" style="position:absolute; top:10px; left:10px;">Novo</span>` : ''}
+                                </div>
+                                <div class="card-body">
+                                    <span style="font-size:0.75rem; color:var(--text-light); text-transform:uppercase; font-weight:600;">${p.cat}</span>
+                                    <h3 style="font-size:1rem; font-weight:600; line-height:1.3; flex:1;">${p.title}</h3>
+                                    <div class="flex" style="justify-content:space-between; align-items:center; margin-top:8px;">
+                                        <span style="font-size:1.1rem; font-weight:800;">${app.utils.fmt(p.price)}</span>
+                                        <button class="btn" style="width:36px; height:36px; padding:0; border-radius:50%;" onclick="event.stopPropagation(); app.cart.add(${p.id})">
+                                            <i class="ph-bold ph-plus"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex gap-10" style="margin-bottom:25px; align-items:baseline;">
-                                <span style="font-size:2rem; font-weight:800; color:var(--text-main);">${app.utils.fmt(p.price)}</span>
-                                <span style="text-decoration:line-through; color:var(--text-light); font-size:1rem;">${app.utils.fmt(p.oldPrice)}</span>
+                        `).join('')}
+                    </div>
+                `;
+            },
+            product: () => {
+                const id = app.state.viewProps.id;
+                const p = DB.find(x => x.id === id);
+                if(!p) return app.router.go('home');
+                
+                return `
+                    <div class="checkout-layout">
+                        <div class="card" style="overflow:hidden; border:1px solid var(--border);">
+                            <div style="background:var(--secondary); padding:40px; display:flex; align-items:center; justify-content:center;">
+                                <img src="${p.img}" style="width:100%; max-width:400px; object-fit:contain; mix-blend-mode:multiply;">
                             </div>
-                            <h3 style="font-size:1rem; margin-bottom:10px;">Sobre o produto</h3>
-                            <p style="color:var(--text-light); line-height:1.6; margin-bottom:40px;">${p.desc}</p>
                         </div>
-                        <div class="detail-fixed-bottom">
-                            <button class="btn btn-success" onclick="app.cart.add(${p.id})">
-                                <i class="ph-bold ph-bag"></i> ADICIONAR AO CARRINHO
+                        <div>
+                            <button onclick="app.router.go('home')" style="margin-bottom:20px; background:none; border:none; display:flex; align-items:center; gap:6px; color:var(--text-light); font-weight:500;">
+                                <i class="ph-bold ph-arrow-left"></i> Voltar
+                            </button>
+                            <span class="tag tag-new" style="margin-bottom:12px;">Em Estoque</span>
+                            <h1 style="font-size:2rem; font-weight:800; line-height:1.1; margin-bottom:12px;">${p.title}</h1>
+                            <h2 style="font-size:2rem; font-weight:300; margin-bottom:24px;">${app.utils.fmt(p.price)}</h2>
+                            
+                            <div class="card" style="padding:24px; margin-bottom:24px; background:var(--surface);">
+                                <h4 style="margin-bottom:10px; font-weight:600;">Sobre o produto</h4>
+                                <p style="color:var(--text-light); line-height:1.6;">
+                                    Produto original com garantia internacional. Acabamento premium, durabilidade excepcional e design exclusivo da marca.
+                                    Disponível para pronta entrega.
+                                </p>
+                            </div>
+
+                            <button class="btn" style="width:100%; padding:16px; font-size:1rem;" onclick="app.cart.add(${p.id})">
+                                ADICIONAR AO CARRINHO
                             </button>
                         </div>
-                    `;
-                },
-                cart: (el) => {
-                    if(app.state.cart.length === 0) {
-                        el.innerHTML = `
-                            <div class="container text-center flex-col" style="height:60vh; justify-content:center;">
-                                <div style="background:var(--surface); padding:30px; border-radius:50%; margin-bottom:20px; box-shadow:var(--shadow-sm);">
-                                    <i class="ph ph-shopping-cart" style="font-size:3rem; color:var(--text-light);"></i>
-                                </div>
-                                <h2>Seu carrinho está vazio</h2>
-                                <p style="color:var(--text-light); margin:10px 0 30px;">Navegue por nossas categorias e encontre as melhores ofertas.</p>
-                                <button class="btn btn-primary" style="width:auto; padding:12px 30px;" onclick="app.router.go('home')">Começar a comprar</button>
-                            </div>
-                        `;
-                        return;
-                    }
-                    const itemsHtml = app.state.cart.map(i => `
-                        <div class="cart-item">
-                            <img src="${i.img}" class="cart-img">
-                            <div class="full-width">
-                                <div class="flex justify-between">
-                                    <h4 style="font-size:0.95rem; font-weight:600; max-width:150px;">${i.title}</h4>
-                                    <button onclick="app.cart.remove(${i.id})" style="color:#ef4444; padding:5px;"><i class="ph-bold ph-trash"></i></button>
-                                </div>
-                                <div class="flex justify-between" style="margin-top:8px; align-items:center;">
-                                    <div class="qty-selector">
-                                        <button onclick="app.cart.update(${i.id}, -1)"><i class="ph-bold ph-minus" style="font-size:0.8rem;"></i></button>
-                                        <span class="font-bold text-sm">${i.qty}</span>
-                                        <button onclick="app.cart.update(${i.id}, 1)"><i class="ph-bold ph-plus" style="font-size:0.8rem;"></i></button>
+                    </div>
+                `;
+            },
+            cart: () => {
+                if(app.state.cart.length === 0) return `
+                    <div style="text-align:center; padding:80px 20px;">
+                        <i class="ph-duotone ph-shopping-cart" style="font-size:4rem; color:var(--text-light); opacity:0.5; margin-bottom:20px;"></i>
+                        <h2 style="margin-bottom:10px;">Carrinho Vazio</h2>
+                        <p style="color:var(--text-light); margin-bottom:30px;">Parece que você ainda não escolheu nada.</p>
+                        <button class="btn btn-outline" onclick="app.router.go('home')">Começar a Comprar</button>
+                    </div>
+                `;
+                
+                return `
+                    <h2 style="margin-bottom:24px; font-weight:700;">Seu Carrinho</h2>
+                    <div class="checkout-layout">
+                        <div style="display:flex; flex-direction:column; gap:16px;">
+                            ${app.state.cart.map(i => `
+                                <div class="card" style="display:flex; padding:16px; gap:16px; align-items:center;">
+                                    <img src="${i.img}" style="width:80px; height:80px; object-fit:cover; border-radius:8px; background:var(--secondary);">
+                                    <div style="flex:1;">
+                                        <div class="flex" style="justify-content:space-between; margin-bottom:4px;">
+                                            <h4 style="font-weight:600; font-size:0.95rem;">${i.title}</h4>
+                                            <button onclick="app.cart.update(${i.id}, -${i.qty})" style="color:var(--accent-error); border:none; background:none;"><i class="ph-bold ph-trash"></i></button>
+                                        </div>
+                                        <div style="color:var(--text-light); font-size:0.85rem; margin-bottom:12px;">${app.utils.fmt(i.price)} un.</div>
+                                        <div class="flex" style="justify-content:space-between; align-items:center;">
+                                            <div style="display:flex; align-items:center; border:1px solid var(--border); border-radius:6px; height:32px;">
+                                                <button onclick="app.cart.update(${i.id}, -1)" style="padding:0 10px; height:100%; border:none; background:none;">-</button>
+                                                <span style="padding:0 10px; font-weight:600; font-size:0.9rem; border-left:1px solid var(--border); border-right:1px solid var(--border); line-height:30px;">${i.qty}</span>
+                                                <button onclick="app.cart.update(${i.id}, 1)" style="padding:0 10px; height:100%; border:none; background:none;">+</button>
+                                            </div>
+                                            <span style="font-weight:700; font-size:1rem;">${app.utils.fmt(i.price * i.qty)}</span>
+                                        </div>
                                     </div>
-                                    <span class="font-bold">${app.utils.fmt(i.price * i.qty)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="card" style="padding:24px; height:fit-content; position:sticky; top:90px;">
+                            <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:20px;">Resumo</h3>
+                            <div class="flex" style="justify-content:space-between; margin-bottom:12px; color:var(--text-light);">
+                                <span>Subtotal</span>
+                                <span>${app.utils.fmt(app.cart.total())}</span>
+                            </div>
+                            <div class="flex" style="justify-content:space-between; margin-bottom:24px; color:var(--accent-success);">
+                                <span>Frete</span>
+                                <span>Grátis</span>
+                            </div>
+                            <div style="border-top:1px solid var(--border); padding-top:20px; margin-bottom:24px;">
+                                <div class="flex" style="justify-content:space-between; font-size:1.2rem; font-weight:800;">
+                                    <span>Total</span>
+                                    <span>${app.utils.fmt(app.cart.total())}</span>
+                                </div>
+                            </div>
+                            <button class="btn" style="width:100%;" onclick="app.router.go('checkout')">Finalizar Compra</button>
+                        </div>
+                    </div>
+                `;
+            },
+            checkout: () => {
+                if(!app.state.user) return app.router.go('auth', {redirect:'checkout'});
+                
+                return `
+                    <div class="checkout-layout">
+                        <div>
+                            <div class="card" style="padding:24px; margin-bottom:24px;">
+                                <h3 style="margin-bottom:20px; font-weight:700;">Endereço</h3>
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                                    <div style="grid-column:span 2">
+                                        <label class="form-label">Rua</label>
+                                        <input type="text" class="form-input" id="addr-street" placeholder="Rua Exemplo" value="${app.state.userAddress.street}">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Número</label>
+                                        <input type="text" class="form-input" id="addr-num" placeholder="123" value="${app.state.userAddress.number}">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">CEP</label>
+                                        <input type="tel" class="form-input" id="addr-zip" placeholder="00000-000" value="${app.state.userAddress.zip}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card" style="padding:24px;">
+                                <h3 style="margin-bottom:20px; font-weight:700;">Pagamento</h3>
+                                <div style="display:flex; gap:12px; margin-bottom:24px;">
+                                    <button class="btn btn-outline" style="flex:1;" onclick="document.getElementById('card-form').classList.add('hidden')">PIX (-5%)</button>
+                                    <button class="btn btn-outline" style="flex:1;" onclick="document.getElementById('card-form').classList.remove('hidden')">Cartão</button>
+                                </div>
+                                
+                                <div id="card-form" class="hidden" style="background:var(--secondary); padding:20px; border-radius:8px; border:1px solid var(--border);">
+                                    <div style="margin-bottom:16px;">
+                                        <label class="form-label">Número do Cartão</label>
+                                        <input type="tel" class="form-input" placeholder="0000 0000 0000 0000" oninput="this.value=app.utils.maskCard(this.value)">
+                                    </div>
+                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                                        <div>
+                                            <label class="form-label">Validade</label>
+                                            <input type="tel" class="form-input" placeholder="MM/AA">
+                                        </div>
+                                        <div>
+                                            <label class="form-label">CVV</label>
+                                            <input type="tel" class="form-input" placeholder="123">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    `).join('');
-                    el.innerHTML = `
-                        <div class="container" style="padding-top:20px; padding-bottom:200px;">
-                            <h2 style="margin-bottom:20px;">Meu Carrinho</h2>
-                            ${itemsHtml}
-                        </div>
-                        <div class="detail-fixed-bottom">
-                            <div class="flex justify-between" style="margin-bottom:15px; font-size:1.1rem; font-weight:700;">
+
+                        <div class="card" style="padding:24px; height:fit-content;">
+                            <h3 style="margin-bottom:20px; font-weight:700;">Confirmar</h3>
+                             <div class="flex" style="justify-content:space-between; font-size:1.2rem; font-weight:800; margin-bottom:24px;">
                                 <span>Total</span>
                                 <span>${app.utils.fmt(app.cart.total())}</span>
                             </div>
-                            <button class="btn btn-success" onclick="app.router.go('checkout')">FECHAR PEDIDO</button>
+                            <button class="btn" style="width:100%;" onclick="app.state.cart=[]; app.cart.save(); app.router.go('success')">
+                                Pagar Agora
+                            </button>
                         </div>
-                    `;
-                },
-                checkout: (el) => {
-                    el.innerHTML = `
-                        <div style="padding:15px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
-                            <button onclick="app.router.go('cart')"><i class="ph-bold ph-arrow-left"></i></button>
-                            <h2 style="font-size:1.2rem;">Finalizar Compra</h2>
-                        </div>
-                        <div class="container" style="padding-top:20px;">
-                            <form onsubmit="app.handlers.submitOrder(event)">
-                                <div class="form-group">
-                                    <label class="form-label">Nome Completo</label>
-                                    <input type="text" class="form-input" id="c-name" required placeholder="Ex: João Silva">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">WhatsApp</label>
-                                    <input type="tel" class="form-input" id="c-phone" required placeholder="(00) 00000-0000">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Endereço</label>
-                                    <input type="text" class="form-input" id="c-addr" required placeholder="Rua, Número, Bairro">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Pagamento</label>
-                                    <select class="form-input" id="c-pay">
-                                        <option value="PIX">PIX (Aprovação Imediata)</option>
-                                        <option value="Cartão">Cartão de Crédito</option>
-                                        <option value="Entrega">Pagamento na Entrega</option>
-                                    </select>
-                                </div>
-                                <div style="background:var(--surface); padding:20px; border-radius:12px; margin:25px 0; border:1px solid var(--border);">
-                                    <div class="flex justify-between" style="margin-bottom:10px; color:var(--text-light);">
-                                        <span>Subtotal (${app.cart.count()} itens)</span>
-                                        <span>${app.utils.fmt(app.cart.total())}</span>
-                                    </div>
-                                    <div class="flex justify-between" style="margin-bottom:15px; color:var(--accent);">
-                                        <span>Frete</span>
-                                        <span>Grátis</span>
-                                    </div>
-                                    <div class="flex justify-between font-bold" style="font-size:1.2rem; padding-top:15px; border-top:1px dashed var(--border);">
-                                        <span>Total</span>
-                                        <span>${app.utils.fmt(app.cart.total())}</span>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-success">CONFIRMAR PEDIDO</button>
-                            </form>
-                        </div>
-                    `;
-                },
-                search: (el) => {
-                    el.innerHTML = `
-                        <div class="search-container">
-                            <div class="search-box">
-                                <i class="ph ph-magnifying-glass" style="font-size:1.2rem; color:var(--text-light);"></i>
-                                <input type="text" placeholder="Buscar na loja..." 
-                                       oninput="app.handlers.search(this.value)" autofocus>
-                            </div>
-                        </div>
-                        <div id="search-results" class="product-grid" style="padding-top:10px;">
-                            <div class="full-width text-center" style="padding-top:50px; color:var(--text-light);">
-                                <i class="ph ph-magnifying-glass" style="font-size:3rem; opacity:0.3;"></i>
-                                <p style="margin-top:10px;">Digite o nome do produto</p>
-                            </div>
-                        </div>
-                        <div style="height:80px"></div>
-                    `;
-                },
-                orders: (el) => {
-                    if(app.state.orders.length === 0) {
-                        el.innerHTML = `<div class="container text-center" style="padding-top:60px; color:var(--text-light);">
-                            <i class="ph ph-receipt" style="font-size:3rem; opacity:0.3;"></i>
-                            <p style="margin-top:15px;">Nenhum pedido realizado.</p>
-                        </div>`;
-                        return;
-                    }
-                    el.innerHTML = `<div class="container" style="padding-top:20px; padding-bottom:100px;">
-                        <h2 style="margin-bottom:20px;">Meus Pedidos</h2>
-                        ${app.state.orders.map(o => `
-                            <div style="background:var(--surface); padding:16px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border);">
-                                <div class="flex justify-between" style="margin-bottom:10px;">
-                                    <span class="font-bold">Pedido #${o.id}</span>
-                                    <span class="text-sm" style="color:var(--text-light);">${o.date}</span>
-                                </div>
-                                <div class="text-sm" style="color:var(--text-light); margin-bottom:12px; line-height:1.4;">${o.items}</div>
-                                <div class="flex justify-between align-center" style="border-top:1px solid var(--border); padding-top:10px;">
-                                    <span class="font-bold text-accent">${o.total}</span>
-                                    <span style="font-size:0.75rem; background:var(--bg-body); padding:4px 10px; border-radius:100px; font-weight:600;">${o.status}</span>
-                                </div>
-                            </div>
-                        `).reverse().join('')}
-                    </div>`;
-                },
-                success: (el) => {
-                    el.innerHTML = `
-                        <div class="container text-center flex-col" style="height:80vh; justify-content:center;">
-                            <div style="width:80px; height:80px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
-                                <i class="ph-bold ph-check" style="font-size:3rem; color:#fff;"></i>
-                            </div>
-                            <h1 style="margin-bottom:10px;">Sucesso!</h1>
-                            <p style="color:var(--text-light); margin-bottom:40px; max-width:300px;">Seu pedido foi realizado. Um atendente da JV Imports entrará em contato em breve.</p>
-                            <button class="btn btn-primary" onclick="app.router.go('home')">Voltar para Loja</button>
-                        </div>
-                    `;
-                }
+                    </div>
+                `;
             },
-            handlers: {
-                search: (val) => {
-                    const div = document.getElementById('search-results');
-                    if(!val) { div.innerHTML = ''; return; }
-                    const res = DB.filter(p => p.title.toLowerCase().includes(val.toLowerCase()));
-                    if(res.length === 0) {
-                        div.innerHTML = `<p class="full-width text-center" style="margin-top:20px; color:var(--text-light);">Nenhum produto encontrado.</p>`;
-                        return;
-                    }
-                    div.innerHTML = res.map(p => `
-                        <div class="product-card" onclick="app.router.go('product', ${p.id})">
-                            <img src="${p.img}" class="product-img">
-                            <div class="product-info">
-                                <h3 class="p-title">${p.title}</h3>
-                                <div class="p-current">${app.utils.fmt(p.price)}</div>
+            auth: () => {
+                const isReg = app.state.viewProps?.mode === 'register';
+                return `
+                    <div class="container" style="max-width:420px; padding-top:40px;">
+                        <div class="card" style="padding:32px;">
+                            <h2 style="text-align:center; margin-bottom:24px; font-weight:800;">${isReg ? 'Criar Conta' : 'Acessar Conta'}</h2>
+                            
+                            <div style="margin-bottom:16px;">
+                                <label class="form-label">E-mail</label>
+                                <input type="email" id="auth-email" class="form-input">
                             </div>
-                        </div>
-                    `).join('');
-                },
-                submitOrder: (e) => {
-                    e.preventDefault();
-                    const name = document.getElementById('c-name').value;
-                    const order = {
-                        id: Math.floor(1000 + Math.random() * 9000),
-                        date: new Date().toLocaleDateString(),
-                        total: app.utils.fmt(app.cart.total()),
-                        items: app.state.cart.map(i => `${i.qty}x ${i.title}`).join(', '),
-                        status: 'Pendente'
-                    };
-                    app.state.orders.push(order);
-                    localStorage.setItem('jv_orders', JSON.stringify(app.state.orders));
-                    app.state.cart = [];
-                    app.cart.save();
-                    app.router.go('success');
-                }
-            }
-        };
+                            <div style="margin-bottom:24px;">
+                                <label class="form-label">Senha</label>
+                                <input type="password" id="auth-pass" class="form-input">
+                            </div>
+                            
+                            <button class="btn" style="width:100%; margin-bottom:16px;" onclick="app.handlers.auth('${isReg?'register':'login'}')">
+                                ${isReg ? 'Cadastrar' : 'Entrar'}
+                            </button>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            app.theme.init();
-            app.ui.updateBadge();
-            app.router.go('home');
-        });
-    </script>
+                            <p style="text-align:center; font-size:0.9rem; color:var(--text-light);">
+                                ${isReg ? 'Já possui conta?' : 'Não tem conta?'} 
+                                <span style="color:var(--text-main); font-weight:700; cursor:pointer; text-decoration:underline;" 
+                                      onclick="app.router.go('auth', {mode:'${isReg?'login':'register'}'})">
+                                    ${isReg ? 'Fazer Login' : 'Cadastre-se'}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                `;
+            },
+            profile: () => {
+                if(!app.state.user) return app.router.go('auth');
+                return `
+                    <div class="checkout-layout">
+                        <div class="card" style="padding:24px; display:flex; align-items:center; justify-content:space-between;">
+                            <div>
+                                <h2 style="font-weight:700;">${app.state.user.email.split('@')[0]}</h2>
+                                <p style="color:var(--text-light);">${app.state.user.email}</p>
+                            </div>
+                            <button class="btn-outline btn-sm" onclick="localStorage.removeItem('jv_user'); app.state.user=null; app.router.go('home')">
+                                Sair
+                            </button>
+                        </div>
+                        <div class="card" style="padding:40px; text-align:center;">
+                            <p style="color:var(--text-light);">Você ainda não tem pedidos recentes.</p>
+                        </div>
+                    </div>
+                `;
+            },
+            search: () => `
+                <div class="container" style="max-width:600px;">
+                    <input type="text" class="form-input" placeholder="O que você procura?" autofocus 
+                           style="padding:16px; font-size:1.1rem;"
+                           oninput="app.handlers.search(this.value)">
+                    <div id="search-results" style="margin-top:20px;"></div>
+                </div>
+            `,
+            success: () => `
+                <div class="container" style="max-width:500px; text-align:center; padding-top:60px;">
+                    <div style="width:80px; height:80px; background:var(--accent-success); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 24px;">
+                        <i class="ph-bold ph-check" style="font-size:2.5rem;"></i>
+                    </div>
+                    <h1 style="margin-bottom:16px; font-weight:800;">Pedido Confirmado!</h1>
+                    <p style="color:var(--text-light); line-height:1.6; margin-bottom:32px;">
+                        Obrigado pela compra. Enviamos os detalhes para o seu e-mail.
+                    </p>
+                    <button class="btn" onclick="app.router.go('home')">Voltar para a Loja</button>
+                </div>
+            `
+        },
+
+        handlers: {
+            search: (val) => {
+                const res = val ? DB.filter(p => p.title.toLowerCase().includes(val.toLowerCase())) : [];
+                document.getElementById('search-results').innerHTML = res.map(p => `
+                    <div onclick="app.router.go('product', {id:${p.id}})" class="card" style="display:flex; gap:16px; padding:12px; margin-bottom:12px; cursor:pointer; align-items:center;">
+                        <img src="${p.img}" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+                        <div>
+                            <div style="font-weight:600;">${p.title}</div>
+                            <div style="color:var(--text-light); font-size:0.9rem;">${app.utils.fmt(p.price)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            },
+            auth: (mode) => {
+                const email = document.getElementById('auth-email').value;
+                if(!email) return app.utils.toast("Preencha o e-mail");
+                app.state.user = { email };
+                localStorage.setItem('jv_user', JSON.stringify(app.state.user));
+                app.router.go(app.state.viewProps?.redirect || 'profile');
+            }
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', app.init);
+</script>
 </body>
 </html>
